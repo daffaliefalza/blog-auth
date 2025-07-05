@@ -40,12 +40,38 @@ import passport from "../config/passport.js";
 const router = Router();
 
 // SIGNUP ROUTE
+// router.post("/signup", async (req, res) => {
+//   try {
+//     const { email, username, password } = req.body;
+
+//     // Hash the password
+//     // const hashedPassword = await bcrypt.hash(password, 10);
+
+//     // Create the user
+//     const user = await User.create({
+//       username,
+//       email,
+//       password,
+//     });
+
+//     res.status(201).json({ message: "User created", user });
+//   } catch (err) {
+//     res.status(500).json({ message: err.message });
+//   }
+// });
+
 router.post("/signup", async (req, res) => {
   try {
     const { email, username, password } = req.body;
 
-    // Hash the password
-    // const hashedPassword = await bcrypt.hash(password, 10);
+    // Check if email already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: "Email already exists",
+      });
+    }
 
     // Create the user
     const user = await User.create({
@@ -54,9 +80,25 @@ router.post("/signup", async (req, res) => {
       password,
     });
 
-    res.status(201).json({ message: "User created", user });
+    res.status(201).json({
+      success: true,
+      message: "User created successfully",
+      user,
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    // Handle other potential errors
+    if (err.code === 11000) {
+      // MongoDB duplicate key error
+      return res.status(400).json({
+        success: false,
+        message: "Email already exists",
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: err.message || "Registration failed",
+    });
   }
 });
 
