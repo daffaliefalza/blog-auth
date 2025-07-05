@@ -12,6 +12,7 @@ import axios from "axios";
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  axios.defaults.withCredentials = true;
 
   useEffect(() => {
     const checkAuth = async () => {

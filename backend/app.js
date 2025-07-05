@@ -24,6 +24,14 @@ const app = express();
 // );
 
 app.use(
+  cors({
+    origin: "http://localhost:5200", // Your frontend origin
+    credentials: true, // Allow credentials (cookies)
+  })
+);
+app.options("/{*any}", cors()); // Enable preflight for all routes
+
+app.use(
   session({
     secret: "asdasdad",
     resave: false,
@@ -33,6 +41,8 @@ app.use(
     }),
     cookie: {
       httpOnly: true,
+      secure: false, // Set to true if using HTTPS
+      sameSite: "lax", // Important for cross-origin requests
       maxAge: 1000 * 60 * 60,
     },
   })
@@ -41,7 +51,6 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session()); // <- This makes `req.logout()` available
 
-app.use(cors());
 app.use(express.json());
 
 // app.use(passport.authenticate("session"));

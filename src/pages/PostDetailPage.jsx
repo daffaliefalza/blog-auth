@@ -191,7 +191,7 @@ import axios from "axios";
 import CommentList from "../components/CommentList";
 import CommentForm from "../components/CommentForm";
 
-const PostDetailPage = () => {
+const PostDetailPage = ({ user }) => {
   const { postId } = useParams();
   const navigate = useNavigate();
   const [post, setPost] = useState(null);
@@ -263,10 +263,15 @@ const PostDetailPage = () => {
 
   const handleUpdate = async (e) => {
     e.preventDefault();
+    if (!user) {
+      navigate("/sign-in");
+      return;
+    }
     try {
       const response = await axios.put(
         `http://localhost:3005/posts/${postId}`,
-        formData
+        formData,
+        { withCredentials: true }
       );
       setPost(response.data);
       setEditMode(false);
@@ -276,6 +281,10 @@ const PostDetailPage = () => {
   };
 
   const handleDelete = async () => {
+    if (!user) {
+      navigate("/sign-in");
+      return;
+    }
     const isConfirmed = window.confirm(
       `Are you sure you want to delete the post "${post?.title}"?`
     );
@@ -283,7 +292,9 @@ const PostDetailPage = () => {
     if (!isConfirmed) return;
 
     try {
-      await axios.delete(`http://localhost:3005/posts/${postId}`);
+      await axios.delete(`http://localhost:3005/posts/${postId}`, {
+        withCredentials: true,
+      });
       navigate("/");
     } catch (err) {
       setError(err.message);
@@ -292,10 +303,15 @@ const PostDetailPage = () => {
   };
 
   const handleAddComment = async (commentContent) => {
+    if (!user) {
+      navigate("/sign-in");
+      return;
+    }
     try {
       const response = await axios.post(
         `http://localhost:3005/posts/${postId}/comments`,
-        { content: commentContent }
+        { content: commentContent },
+        { withCredentials: true }
       );
       setComments((prev) => [response.data, ...prev]);
       setCommentPagination((prev) => ({
