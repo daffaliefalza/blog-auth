@@ -1,15 +1,12 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-
+import { Link } from "react-router-dom";
 const AuthForm = ({ type, onSubmit }) => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
     username: type === "signup" ? "" : undefined,
   });
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -18,13 +15,8 @@ const AuthForm = ({ type, onSubmit }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
-
     try {
       await onSubmit(formData);
-      navigate("/posts");
-    } catch (err) {
-      setError(err.message || "An error occurred");
     } finally {
       setLoading(false);
     }
@@ -33,7 +25,6 @@ const AuthForm = ({ type, onSubmit }) => {
   return (
     <div className="auth-form">
       <h2>{type === "login" ? "Login" : "Sign Up"}</h2>
-      {error && <div className="error-message">{error}</div>}
       <form onSubmit={handleSubmit}>
         {type === "signup" && (
           <div className="form-group">
@@ -74,11 +65,11 @@ const AuthForm = ({ type, onSubmit }) => {
       <div className="auth-switch">
         {type === "login" ? (
           <p>
-            Don't have an account? <a href="/sign-up">Sign up</a>
+            Don't have an account? <Link to="/sign-up">Sign up</Link>
           </p>
         ) : (
           <p>
-            Already have an account? <a href="/sign-in">Login</a>
+            Already have an account? <Link to="/sign-in">Login</Link>
           </p>
         )}
       </div>
