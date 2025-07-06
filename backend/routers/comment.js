@@ -93,6 +93,95 @@ import Post from "../models/posts.model.js";
 const router = Router({ mergeParams: true });
 
 // Get comments for a post with pagination
+// router.get("/", async (req, res) => {
+//   try {
+//     const page = Number(req.query.page) || 1;
+//     const pageSize = Number(req.query.pageSize) || 5;
+//     const skip = (page - 1) * pageSize;
+
+//     const comments = await Comment.find({ post: req.params.postId })
+//       .sort({ createdAt: -1 })
+//       .skip(skip)
+//       .limit(pageSize);
+
+//     const totalComments = await Comment.countDocuments({
+//       post: req.params.postId,
+//     });
+
+//     res.json({
+//       data: comments,
+//       total: totalComments,
+//       page,
+//       pageSize,
+//       hasMore: skip + pageSize < totalComments,
+//     });
+//   } catch (err) {
+//     res.status(500).json({ message: err.message });
+//   }
+// });
+
+// // Add a new comment
+// router.post("/", async (req, res) => {
+//   try {
+//     if (!req.body.content || typeof req.body.content !== "string") {
+//       return res.status(400).json({ message: "Comment content is required" });
+//     }
+
+//     const newComment = new Comment({
+//       content: req.body.content,
+//       post: req.params.postId,
+//     });
+
+//     const savedComment = await newComment.save();
+
+//     await Post.findByIdAndUpdate(req.params.postId, {
+//       $push: { comments: savedComment._id },
+//     });
+
+//     res.status(201).json(savedComment);
+//   } catch (err) {
+//     res.status(400).json({
+//       message: "Error creating comment",
+//       error: err.message,
+//     });
+//   }
+// });
+
+// In your POST /comments route
+router.post("/", async (req, res) => {
+  try {
+    if (!req.body.content || typeof req.body.content !== "string") {
+      return res.status(400).json({ message: "Comment content is required" });
+    }
+
+    const newComment = new Comment({
+      content: req.body.content,
+      post: req.params.postId,
+      author: req.user._id, // Add the author ID
+    });
+
+    const savedComment = await newComment.save();
+
+    // Populate author info when returning the comment
+    const populatedComment = await Comment.findById(savedComment._id).populate(
+      "author",
+      "username"
+    ); // Only include username
+
+    await Post.findByIdAndUpdate(req.params.postId, {
+      $push: { comments: savedComment._id },
+    });
+
+    res.status(201).json(populatedComment);
+  } catch (err) {
+    res.status(400).json({
+      message: "Error creating comment",
+      error: err.message,
+    });
+  }
+});
+
+// In your GET /comments route
 router.get("/", async (req, res) => {
   try {
     const page = Number(req.query.page) || 1;
@@ -102,7 +191,8 @@ router.get("/", async (req, res) => {
     const comments = await Comment.find({ post: req.params.postId })
       .sort({ createdAt: -1 })
       .skip(skip)
-      .limit(pageSize);
+      .limit(pageSize)
+      .populate("author", "username"); // Populate author info
 
     const totalComments = await Comment.countDocuments({
       post: req.params.postId,
@@ -117,33 +207,6 @@ router.get("/", async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
-  }
-});
-
-// Add a new comment
-router.post("/", async (req, res) => {
-  try {
-    if (!req.body.content || typeof req.body.content !== "string") {
-      return res.status(400).json({ message: "Comment content is required" });
-    }
-
-    const newComment = new Comment({
-      content: req.body.content,
-      post: req.params.postId,
-    });
-
-    const savedComment = await newComment.save();
-
-    await Post.findByIdAndUpdate(req.params.postId, {
-      $push: { comments: savedComment._id },
-    });
-
-    res.status(201).json(savedComment);
-  } catch (err) {
-    res.status(400).json({
-      message: "Error creating comment",
-      error: err.message,
-    });
   }
 });
 

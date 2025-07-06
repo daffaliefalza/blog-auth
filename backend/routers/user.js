@@ -60,6 +60,7 @@ const router = Router();
 //   }
 // });
 
+// Update the signup route
 router.post("/signup", async (req, res) => {
   try {
     const { email, username, password } = req.body;
@@ -73,35 +74,32 @@ router.post("/signup", async (req, res) => {
       });
     }
 
-    // Create the user
+    // Create the user without logging them in
     const user = await User.create({
       username,
       email,
       password,
     });
 
+    // Return success but DON'T log the user in
     res.status(201).json({
       success: true,
-      message: "User created successfully",
-      user,
+      message: "User created successfully. Please sign in.",
+      // Don't return the user object here
     });
   } catch (err) {
-    // Handle other potential errors
     if (err.code === 11000) {
-      // MongoDB duplicate key error
       return res.status(400).json({
         success: false,
         message: "Email already exists",
       });
     }
-
     res.status(500).json({
       success: false,
       message: err.message || "Registration failed",
     });
   }
 });
-
 // router.post("login", passport.authenticate("local"), {
 //   failureMessage: true,
 // }),

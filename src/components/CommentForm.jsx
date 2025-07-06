@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { FaPaperPlane } from "react-icons/fa";
 
 const CommentForm = ({ onSubmit }) => {
   const [content, setContent] = useState("");
@@ -12,14 +13,17 @@ const CommentForm = ({ onSubmit }) => {
 
   return (
     <form onSubmit={handleSubmit} className="comment-form">
-      <textarea
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-        placeholder="Write your comment..."
-        required
-      />
-      <button type="submit" className="btn">
-        Add Comment
+      <div className="form-group">
+        <textarea
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          placeholder="Share your thoughts..."
+          required
+          rows="3"
+        />
+      </div>
+      <button type="submit" className="btn btn-submit">
+        <FaPaperPlane /> Post Comment
       </button>
     </form>
   );

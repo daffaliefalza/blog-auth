@@ -1,15 +1,16 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-
 import AuthForm from "../components/AuthForm";
-const SignUpPage = ({ setUser }) => {
+
+const SignUpPage = () => {
   const navigate = useNavigate();
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
 
   const handleSignUp = async (formData) => {
     try {
-      setError(""); // Clear previous errors
+      setError("");
       const response = await axios.post(
         "http://localhost:3005/auth/signup",
         formData,
@@ -17,13 +18,13 @@ const SignUpPage = ({ setUser }) => {
       );
 
       if (response.data.success) {
-        setUser(response.data.user);
-        navigate("/posts");
+        setSuccess(true);
+        // Redirect to sign-in after a brief delay
+        setTimeout(() => navigate("/sign-in"), 2000);
       } else {
         setError(response.data.message || "Signup failed");
       }
     } catch (err) {
-      // Handle network errors or other unexpected errors
       setError(
         err.response?.data?.message || "An error occurred during signup"
       );
@@ -40,7 +41,13 @@ const SignUpPage = ({ setUser }) => {
           {error}
         </div>
       )}
-      <AuthForm type="signup" onSubmit={handleSignUp} />
+      {success ? (
+        <div className="success-message">
+          Account created successfully! Redirecting to sign in...
+        </div>
+      ) : (
+        <AuthForm type="signup" onSubmit={handleSignUp} />
+      )}
     </div>
   );
 };

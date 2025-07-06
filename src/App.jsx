@@ -8,6 +8,8 @@ import SignInPage from "./pages/SignInPage";
 import SignUpPage from "./pages/SignUpPage";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import AboutPage from "./pages/AboutPage";
+import ContactPage from "./pages/ContactPage";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -53,6 +55,8 @@ function App() {
         <main className="container">
           <Routes>
             <Route path="/" element={<HomePage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/contact" element={<ContactPage />} />
             <Route path="/posts" element={<PostsPageDup user={user} />} />
             <Route
               path="/posts/:postId"

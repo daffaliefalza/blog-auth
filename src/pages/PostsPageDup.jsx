@@ -407,6 +407,16 @@
 // simpler example
 import { useState, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import {
+  FaSearch,
+  FaTimes,
+  FaPlus,
+  FaEdit,
+  FaTrash,
+  FaEye,
+} from "react-icons/fa";
+import LoadingSpinner from "../components/LoadingSpinner";
+import ErrorDisplay from "../components/ErrorDisplay";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import PostForm from "../components/PostForm";
@@ -490,57 +500,100 @@ const PostsPageDup = ({ user }) => {
 
   if (loading) return <div className="loading">Loading...</div>;
   if (error) return <div className="error">Error: {error}</div>;
-
   return (
     <div className="posts-page">
       <div className="posts-header">
-        <h1>Blog Posts</h1>
-        <button onClick={() => setShowForm(!showForm)} className="btn">
-          {showForm ? "Cancel" : "Add New Post"}
-        </button>
-      </div>
-
-      <div className="search-container">
-        <input
-          type="text"
-          placeholder="Search posts by title..."
-          value={searchTerm}
-          onChange={(e) => handleSearch(e.target.value)}
-          className="search-input"
-        />
-        {searchTerm && (
-          <button onClick={() => handleSearch("")} className="btn btn-clear">
-            Clear
+        <h1>Cultural Exchange Blog</h1>
+        {user && (
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="btn btn-primary"
+          >
+            {showForm ? (
+              <>
+                <FaTimes /> Cancel
+              </>
+            ) : (
+              <>
+                <FaPlus /> New Post
+              </>
+            )}
           </button>
         )}
       </div>
 
+      <div className="search-container">
+        <div className="search-input-wrapper">
+          {/* <FaSearch className="search-icon" /> */}
+          <input
+            type="text"
+            placeholder="Search posts by title..."
+            value={searchTerm}
+            onChange={(e) => handleSearch(e.target.value)}
+            className="search-input"
+          />
+          {searchTerm && (
+            <button onClick={() => handleSearch("")} className="clear-btn">
+              <FaTimes />
+            </button>
+          )}
+        </div>
+      </div>
+
       {showForm && <PostForm onSubmit={handleAddPost} />}
 
-      {posts.length === 0 ? (
+      {loading ? (
+        <LoadingSpinner />
+      ) : error ? (
+        <ErrorDisplay error={error} />
+      ) : posts.length === 0 ? (
         <div className="no-results">
           {searchTerm ? (
             <p>No posts found matching "{searchTerm}"</p>
           ) : (
-            <p>No posts available. Create your first post!</p>
+            <>
+              <p>No posts available yet.</p>
+              {!user && (
+                <p>
+                  <Link to="/sign-up">Sign up</Link> to create the first post!
+                </p>
+              )}
+            </>
           )}
         </div>
       ) : (
         <div className="posts-grid">
           {posts.map((post) => (
             <div key={post._id} className="post-card">
-              <h2>{post.title}</h2>
-              <p>{post.content}</p>
+              <div className="post-card-content">
+                <h2>{post.title}</h2>
+                <p className="post-excerpt">
+                  {post.content.length > 150
+                    ? `${post.content.substring(0, 150)}...`
+                    : post.content}
+                </p>
+                {post.createdAt && (
+                  <p className="post-date">
+                    {new Date(post.createdAt).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </p>
+                )}
+              </div>
               <div className="post-actions">
                 <Link to={`/posts/${post._id}`} className="btn btn-view">
-                  View Details
+                  <FaEye /> Read More
                 </Link>
-                <button
-                  onClick={() => handleDelete(post._id)}
-                  className="btn btn-delete"
-                >
-                  Delete
-                </button>
+                {user && (
+                  <button
+                    onClick={() => handleDelete(post._id)}
+                    className="btn btn-delete"
+                  >
+                    <FaTrash /> Delete
+                  </button>
+                )}
               </div>
             </div>
           ))}
@@ -548,15 +601,16 @@ const PostsPageDup = ({ user }) => {
       )}
 
       {total > 0 && (
-        <Pagination
-          className="pagination"
-          current={page}
-          pageSize={pageSize}
-          total={total}
-          showSizeChanger
-          onChange={handlePageChange}
-          onShowSizeChange={(_, size) => handlePageChange(1, size)}
-        />
+        <div className="pagination-container">
+          <Pagination
+            current={page}
+            pageSize={pageSize}
+            total={total}
+            showSizeChanger
+            onChange={handlePageChange}
+            onShowSizeChange={(_, size) => handlePageChange(1, size)}
+          />
+        </div>
       )}
     </div>
   );

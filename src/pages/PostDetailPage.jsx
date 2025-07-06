@@ -187,6 +187,15 @@
 
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
+import {
+  FaArrowLeft,
+  FaEdit,
+  FaTrash,
+  FaComment,
+  FaClock,
+} from "react-icons/fa";
+import LoadingSpinner from "../components/LoadingSpinner";
+import ErrorDisplay from "../components/ErrorDisplay";
 import axios from "axios";
 import CommentList from "../components/CommentList";
 import CommentForm from "../components/CommentForm";
@@ -302,6 +311,7 @@ const PostDetailPage = ({ user }) => {
     }
   };
 
+  // In your handleAddComment function:
   const handleAddComment = async (commentContent) => {
     if (!user) {
       navigate("/sign-in");
@@ -333,13 +343,13 @@ const PostDetailPage = ({ user }) => {
   if (!post) return <div className="not-found">Post not found</div>;
 
   return (
-    <div className="post-detail">
+    <div className="post-detail-container">
       <Link to="/posts" className="back-link">
-        ← Back to Posts
+        <FaArrowLeft /> Back to Posts
       </Link>
 
       {editMode ? (
-        <form onSubmit={handleUpdate} className="post-form">
+        <form onSubmit={handleUpdate} className="post-edit-form">
           <div className="form-group">
             <label>Title</label>
             <input
@@ -363,7 +373,7 @@ const PostDetailPage = ({ user }) => {
           </div>
           <div className="form-actions">
             <button type="submit" className="btn btn-save">
-              Save
+              Save Changes
             </button>
             <button
               type="button"
@@ -375,22 +385,49 @@ const PostDetailPage = ({ user }) => {
           </div>
         </form>
       ) : (
-        <div className="post-content">
-          <h1>{post.title}</h1>
-          <p>{post.content}</p>
-          <div className="post-actions">
-            <button onClick={() => setEditMode(true)} className="btn btn-edit">
-              Edit Post
-            </button>
-            <button onClick={handleDelete} className="btn btn-delete">
-              Delete Post
-            </button>
+        <article className="post-content">
+          <header>
+            <h1>{post.title}</h1>
+            {post.createdAt && (
+              <div className="post-meta">
+                <span className="post-date">
+                  <FaClock />{" "}
+                  {new Date(post.createdAt).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </span>
+              </div>
+            )}
+          </header>
+          <div className="post-body">
+            {post.content.split("\n").map((paragraph, i) => (
+              <p key={i}>{paragraph}</p>
+            ))}
           </div>
-        </div>
+          {user && (
+            <div className="post-actions">
+              <button
+                onClick={() => setEditMode(true)}
+                className="btn btn-edit"
+              >
+                <FaEdit /> Edit Post
+              </button>
+              <button onClick={handleDelete} className="btn btn-delete">
+                <FaTrash /> Delete Post
+              </button>
+            </div>
+          )}
+        </article>
       )}
 
-      <div className="comments-section">
-        <h2>Comments</h2>
+      <section className="comments-section">
+        <h2>
+          <FaComment /> Comments ({commentPagination.total})
+        </h2>
         <CommentList comments={comments} />
         {commentPagination.hasMore && (
           <button onClick={loadMoreComments} className="btn btn-load-more">
@@ -398,7 +435,7 @@ const PostDetailPage = ({ user }) => {
           </button>
         )}
         <CommentForm onSubmit={handleAddComment} />
-      </div>
+      </section>
     </div>
   );
 };
